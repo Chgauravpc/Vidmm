@@ -1,0 +1,12 @@
+# --- memory core: NO dependencies (pure stdlib) ---
+# The interval schema and resolver run anywhere Python 3.10+ runs.
+
+# --- query side (added as those layers land) ---
+numpy>=1.24
+
+# --- ingest / perception side (offline GPU only; not needed to run the demo) ---
+# torch
+# transformers>=4.44        # SigLIP, Qwen2-VL
+# pillow
+# av                        # frame decoding
+# pytest                    # optional; tests also run standalone

@@ -26,10 +26,15 @@ express.
 |-------|-------|
 | Interval schema (`types.py`) | ✅ done, CPU-only, zero deps |
 | Sweep-line resolver (`resolve.py`) | ✅ done, 9/9 characterization tests pass |
-| Perception cascade (SigLIP → Qwen2-VL) | ⬜ planned (GPU ingest, offline) |
+| Perception cascade (SigLIP → Qwen2-VL) | ✅ code done, 17/17 logic tests pass; **not yet run on a GPU** |
+| Feature packs (`pack.py`) | ✅ done, round-trip tested |
+| Kaggle/Colab ingest notebook | ✅ `notebooks/ingest_kaggle.ipynb` |
 | Interval TKG store (SQLite + numpy) | ⬜ planned |
 | Retriever + cited-answer generation | ⬜ planned |
-| Feature packs (committed, GPU-free demo) | ⬜ planned |
+
+**No measured numbers yet.** The cascade's logic is tested end-to-end on
+synthetic observations; the model wiring has not been executed on real video.
+Escalation rate, ×realtime, and accuracy are unmeasured until the notebook runs.
 
 The memory core has **no third-party dependencies** and runs anywhere Python
 runs. The perception/ingest layers run offline on a GPU (Kaggle/Colab) and emit

@@ -71,13 +71,30 @@ class SigLIPTagger:
         self.text_embeds = self._encode_text(self.captions)
 
     # ---------------- encoding ----------------
+    @staticmethod
+    def _as_tensor(out):
+        """Normalize what get_*_features returns across transformers versions.
+
+        Some versions hand back a bare tensor; others return a
+        BaseModelOutputWithPooling. Reach for the pooled representation, which
+        is the one SigLIP's contrastive head is trained on - falling back to the
+        CLS position only if there is no pooler.
+        """
+        if hasattr(out, "pooler_output") and out.pooler_output is not None:
+            return out.pooler_output
+        if hasattr(out, "last_hidden_state"):
+            return out.last_hidden_state[:, 0]
+        if isinstance(out, (tuple, list)):
+            return out[0]
+        return out
+
     def _encode_text(self, captions: Sequence[str]) -> "np.ndarray":
         torch = self.torch
         inputs = self.processor(
             text=list(captions), padding="max_length", truncation=True, return_tensors="pt"
         ).to(self.device)
         with torch.no_grad():
-            feats = self.model.get_text_features(**inputs)
+            feats = self._as_tensor(self.model.get_text_features(**inputs))
         feats = feats / feats.norm(dim=-1, keepdim=True)
         return feats.float().cpu().numpy()
 
@@ -88,7 +105,7 @@ class SigLIPTagger:
             chunk = list(images[i : i + self.batch_size])
             inputs = self.processor(images=chunk, return_tensors="pt").to(self.device, self.dtype)
             with torch.no_grad():
-                feats = self.model.get_image_features(**inputs)
+                feats = self._as_tensor(self.model.get_image_features(**inputs))
             feats = feats / feats.norm(dim=-1, keepdim=True)
             out.append(feats.float().cpu().numpy())
         return np.concatenate(out, axis=0) if out else np.zeros((0, self.text_embeds.shape[1]))
@@ -101,8 +118,13 @@ class SigLIPTagger:
         Using the model's learned scale/bias is what makes these numbers
         comparable across frames and across prompt-bank sizes.
         """
-        logit_scale = float(self.model.logit_scale.exp().detach().cpu())
-        logit_bias = float(self.model.logit_bias.detach().cpu())
+        # SigLIP exposes these as learned parameters; fall back to the published
+        # initialization if a future version relocates them, so a rename
+        # degrades the calibration instead of crashing mid-ingest.
+        scale_param = getattr(self.model, "logit_scale", None)
+        bias_param = getattr(self.model, "logit_bias", None)
+        logit_scale = float(scale_param.exp().detach().cpu()) if scale_param is not None else 100.0
+        logit_bias = float(bias_param.detach().cpu()) if bias_param is not None else -12.92
         sims = image_embeds @ self.text_embeds.T
         logits = sims * logit_scale + logit_bias
         return 1.0 / (1.0 + np.exp(-logits))

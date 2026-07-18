@@ -65,11 +65,12 @@ python -m video_memory.demo --pack ../packs/clip -q "when was I in the kitchen"
 python tests/test_resolve.py            # standalone runners, no pytest needed
 python tests/test_cascade.py
 python tests/test_query.py
+python tests/test_carry_forward.py
 # or
 python -m pytest tests/ -v
 ```
 
-51 checks, all CPU, no network.
+58 checks, all CPU, no network.
 
 ## Answers cite, and admit gaps
 

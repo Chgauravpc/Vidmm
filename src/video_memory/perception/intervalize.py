@@ -27,6 +27,65 @@ DEFAULT_TAU = 2.0
 DEFAULT_SUBJECT = "camera_wearer"
 
 
+def carry_forward_gated(
+    observations: Sequence[Observation],
+    kept: Sequence[tuple[int, float]],
+    gated: Sequence[tuple[int, float]],
+) -> list[Observation]:
+    """Propagate state across frames the Stage-1 motion gate rejected.
+
+    The gate drops a frame when it looks the same as the previous one. That is
+    not an absence of evidence - it is evidence that nothing changed, and
+    therefore that the previous facts still hold. The first implementation threw
+    those frames away, which had a consequence that only showed up on real
+    video: with an aggressive gate (87% of frames dropped on the first Kaggle
+    run) the surviving frames were further apart than tau, nothing merged, and
+    every fact became its own one-second island. The interval memory degenerated
+    into exactly the point memory it exists to improve on.
+
+    So each gated frame inherits the observations of the most recent kept frame.
+    Carried observations are marked in their source, so evidence counts stay
+    honest about which frames were actually looked at.
+
+    Args:
+        kept:  (frame_id, timestamp) of frames that reached Stage 2.
+        gated: (frame_id, timestamp) of frames the gate rejected.
+    """
+    if not gated or not observations:
+        return list(observations)
+
+    by_frame: dict[int, list[Observation]] = defaultdict(list)
+    for o in observations:
+        by_frame[o.frame_id].append(o)
+
+    kept_sorted = sorted(kept, key=lambda ft: ft[1])
+    out: list[Observation] = list(observations)
+
+    for gated_id, gated_ts in sorted(gated, key=lambda ft: ft[1]):
+        source_frame: int | None = None
+        for frame_id, ts in kept_sorted:
+            if ts <= gated_ts:
+                source_frame = frame_id
+            else:
+                break
+        if source_frame is None:
+            continue  # gated frames before any kept frame have nothing to inherit
+
+        for o in by_frame.get(source_frame, []):
+            out.append(
+                Observation(
+                    frame_id=gated_id,
+                    timestamp=gated_ts,
+                    relation=o.relation,
+                    object=o.object,
+                    confidence=o.confidence,
+                    source=f"{o.source}:carried",
+                )
+            )
+
+    return out
+
+
 def build_intervals(
     observations: Sequence[Observation],
     frame_period: float,

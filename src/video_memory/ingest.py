@@ -29,7 +29,11 @@ from .perception.cascade import (
     should_escalate,
 )
 from .perception.frames import sample_frames
-from .perception.intervalize import DEFAULT_TAU, observations_to_memory
+from .perception.intervalize import (
+    DEFAULT_TAU,
+    carry_forward_gated,
+    observations_to_memory,
+)
 from .perception.prompt_bank import DEFAULT_BANK
 from .perception.stage2_siglip import DEFAULT_MODEL, SigLIPTagger
 
@@ -46,6 +50,7 @@ def ingest_video(
     vlm_model: str = Stage3VLM.DEFAULT_MODEL,
     min_duration: float = 0.0,
     device: str | None = None,
+    carry_forward: bool = True,
 ) -> dict[str, Any]:
     t0 = time.time()
     stats = CascadeStats()
@@ -97,8 +102,22 @@ def ingest_video(
 
     merged = merge_stage_results(observations, stage3_all)
 
+    # ---- carry state across gated frames ----
+    # A frame the gate rejected looked identical to its predecessor, which is
+    # evidence the previous facts still hold. Without this, an aggressive gate
+    # spaces the surviving frames further apart than tau and intervalization
+    # collapses into isolated one-frame points.
+    if carry_forward:
+        gated = [(frames[i].frame_id, frames[i].timestamp)
+                 for i in range(len(frames)) if i not in set(keep)]
+        merged = carry_forward_gated(
+            merged,
+            kept=[(f.frame_id, f.timestamp) for f in kept_frames],
+            gated=gated,
+        )
+
     # ---- intervalize + resolve ----
-    last_ts = kept_frames[-1].timestamp
+    last_ts = frames[-1].timestamp if carry_forward else kept_frames[-1].timestamp
     assertions = observations_to_memory(
         merged,
         frame_period=frame_period,
@@ -119,17 +138,23 @@ def ingest_video(
         "vlm_model": vlm_model if stage3_enabled else None,
         "stage3_enabled": stage3_enabled,
         "motion_gate": motion_gate,
+        "carry_forward": carry_forward,
         "video_duration_s": duration,
         "ingest_seconds": round(elapsed, 2),
         "x_realtime": round(duration / elapsed, 2) if elapsed else None,
         "cascade": stats.as_dict(),
     }
 
+    # Record every decoded frame, not just the kept ones: carried observations
+    # cite gated frame ids, and a citation that cannot be resolved back to a
+    # timestamp is not a citation. `kept_frame_ids` preserves the row alignment
+    # of the embedding matrix, which still covers only the frames Stage 2 saw.
+    meta["kept_frame_ids"] = [f.frame_id for f in kept_frames]
     write_pack(
         out_path,
         assertions=assertions,
         embeddings=embeddings,
-        frames=[(f.frame_id, f.timestamp) for f in kept_frames],
+        frames=[(f.frame_id, f.timestamp) for f in frames],
         observations=merged,
         meta=meta,
     )
@@ -145,6 +170,8 @@ def main() -> None:
     p.add_argument("--max-frames", type=int, default=None)
     p.add_argument("--no-stage3", action="store_true", help="ablation: SigLIP only")
     p.add_argument("--min-duration", type=float, default=0.0)
+    p.add_argument("--no-carry-forward", action="store_true",
+                   help="ablation: let gated frames vanish instead of extending state")
     p.add_argument("--device", default=None)
     args = p.parse_args()
 
@@ -157,6 +184,7 @@ def main() -> None:
         stage3_enabled=not args.no_stage3,
         min_duration=args.min_duration,
         device=args.device,
+        carry_forward=not args.no_carry_forward,
     )
     print(json.dumps(meta, indent=2))
 

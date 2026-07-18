@@ -26,22 +26,64 @@ express.
 |-------|-------|
 | Interval schema (`types.py`) | ✅ done, CPU-only, zero deps |
 | Sweep-line resolver (`resolve.py`) | ✅ done, 9/9 characterization tests pass |
-| Perception cascade (SigLIP → Qwen2-VL) | ⬜ planned (GPU ingest, offline) |
-| Interval TKG store (SQLite + numpy) | ⬜ planned |
-| Retriever + cited-answer generation | ⬜ planned |
-| Feature packs (committed, GPU-free demo) | ⬜ planned |
+| Perception cascade (SigLIP → Qwen2-VL) | ✅ code done, 17/17 logic tests pass; **not yet run on a GPU** |
+| Feature packs (`pack.py`) | ✅ done, round-trip tested |
+| Kaggle/Colab ingest notebook | ✅ `notebooks/ingest_kaggle.ipynb` |
+| Interval store (`store.py`, SQLite) | ✅ done |
+| Retriever + 5-signal ranker | ✅ done, signals inspectable |
+| Cited answers (`answer.py`) | ✅ done, template-composed |
+| Demo CLI (`demo.py`) | ✅ `python -m video_memory.demo --demo` |
+
+**No measured numbers yet.** The cascade's logic is tested end-to-end on
+synthetic observations; the model wiring has not been executed on real video.
+Escalation rate, ×realtime, and accuracy are unmeasured until the notebook runs.
 
 The memory core has **no third-party dependencies** and runs anywhere Python
 runs. The perception/ingest layers run offline on a GPU (Kaggle/Colab) and emit
 committed *feature packs* so a reviewer can run the query side with no GPU.
 
+## Try it
+
+No GPU, no models, no dataset — the synthetic memory is built in:
+
+```bash
+cd src
+python -m video_memory.demo --demo --timeline          # see the whole memory
+python -m video_memory.demo --demo                     # sample questions
+python -m video_memory.demo --demo -q "what was I holding at 1:20" --explain
+```
+
+Against a real ingested pack:
+
+```bash
+python -m video_memory.demo --pack ../packs/clip -q "when was I in the kitchen"
+```
+
 ## Run the tests
 
 ```bash
-python tests/test_resolve.py            # standalone runner, no pytest needed
+python tests/test_resolve.py            # standalone runners, no pytest needed
+python tests/test_cascade.py
+python tests/test_query.py
 # or
 python -m pytest tests/ -v
 ```
+
+51 checks, all CPU, no network.
+
+## Answers cite, and admit gaps
+
+```
+Q: what was I holding at 0:52
+Nothing is asserted at 00:52.00. The closest fact is HOLDS=a phone over
+[01:00.00 - 01:35.00]. Note this gap could be a genuine absence or a missed
+detection - the memory cannot distinguish them.
+```
+
+Answers are composed from templates, not generated. A language model at the end
+would let fluent prose paper over a bad retrieval, which is the failure mode
+this project argues against. Every number traces to a row; the citation is the
+product and the sentence is packaging.
 
 ## Design notes
 

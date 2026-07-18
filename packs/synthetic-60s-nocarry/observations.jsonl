@@ -1,0 +1,24 @@
+{"frame_id": 0, "timestamp": 0.0, "relation": "ACTIVITY", "object": "walking", "confidence": 1.782296521923854e-06, "source": "siglip"}
+{"frame_id": 0, "timestamp": 0.0, "relation": "HOLDS", "object": "a cup", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 0, "timestamp": 0.0, "relation": "LOCATED_IN", "object": "a living room", "confidence": 4.56579164165305e-06, "source": "siglip"}
+{"frame_id": 12, "timestamp": 12.0, "relation": "ACTIVITY", "object": "walking", "confidence": 2.474787663686584e-07, "source": "siglip"}
+{"frame_id": 12, "timestamp": 12.0, "relation": "HOLDS", "object": "a cup", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 12, "timestamp": 12.0, "relation": "LOCATED_IN", "object": "a living room", "confidence": 6.510324055852834e-06, "source": "siglip"}
+{"frame_id": 15, "timestamp": 15.0, "relation": "ACTIVITY", "object": "eating", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 15, "timestamp": 15.0, "relation": "HOLDS", "object": "nothing", "confidence": 1.801163307391107e-05, "source": "siglip"}
+{"frame_id": 15, "timestamp": 15.0, "relation": "LOCATED_IN", "object": "a street", "confidence": 2.6255485863657668e-05, "source": "siglip"}
+{"frame_id": 23, "timestamp": 23.0, "relation": "ACTIVITY", "object": "walking", "confidence": 1.5585893606839818e-06, "source": "siglip"}
+{"frame_id": 23, "timestamp": 23.0, "relation": "HOLDS", "object": "a cup", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 23, "timestamp": 23.0, "relation": "LOCATED_IN", "object": "a living room", "confidence": 2.9102723146934295e-06, "source": "siglip"}
+{"frame_id": 30, "timestamp": 30.0, "relation": "ACTIVITY", "object": "eating", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 30, "timestamp": 30.0, "relation": "HOLDS", "object": "nothing", "confidence": 4.088303467142396e-05, "source": "siglip"}
+{"frame_id": 30, "timestamp": 30.0, "relation": "LOCATED_IN", "object": "a garden", "confidence": 0.0001279271673411131, "source": "siglip"}
+{"frame_id": 34, "timestamp": 34.0, "relation": "ACTIVITY", "object": "eating", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 34, "timestamp": 34.0, "relation": "HOLDS", "object": "nothing", "confidence": 2.2293552319752052e-06, "source": "siglip"}
+{"frame_id": 34, "timestamp": 34.0, "relation": "LOCATED_IN", "object": "a garden", "confidence": 5.7868008298100904e-05, "source": "siglip"}
+{"frame_id": 45, "timestamp": 45.0, "relation": "ACTIVITY", "object": "walking", "confidence": 2.7267668656349997e-07, "source": "siglip"}
+{"frame_id": 45, "timestamp": 45.0, "relation": "HOLDS", "object": "a cup", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 45, "timestamp": 45.0, "relation": "LOCATED_IN", "object": "a living room", "confidence": 3.9451001612178516e-06, "source": "siglip"}
+{"frame_id": 56, "timestamp": 56.0, "relation": "ACTIVITY", "object": "walking", "confidence": 8.02665510946099e-07, "source": "siglip"}
+{"frame_id": 56, "timestamp": 56.0, "relation": "HOLDS", "object": "a cup", "confidence": 0.85, "source": "qwen2vl"}
+{"frame_id": 56, "timestamp": 56.0, "relation": "LOCATED_IN", "object": "a living room", "confidence": 3.4213196613563923e-06, "source": "siglip"}

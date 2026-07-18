@@ -1,0 +1,23 @@
+{
+  "pack_version": 1,
+  "n_assertions": 24,
+  "video_path": "/kaggle/working/synthetic.mp4",
+  "sample_fps": 1.0,
+  "tau": 2.0,
+  "min_duration": 0.0,
+  "siglip_model": "google/siglip-base-patch16-224",
+  "vlm_model": "Qwen/Qwen2-VL-2B-Instruct",
+  "stage3_enabled": true,
+  "motion_gate": 0.02,
+  "video_duration_s": 60.0,
+  "ingest_seconds": 41.03,
+  "x_realtime": 1.46,
+  "cascade": {
+    "n_frames": 60,
+    "n_gated_out": 52,
+    "n_stage2": 8,
+    "n_stage3": 8,
+    "stage3_failures": 0,
+    "escalation_rate": 1.0
+  }
+}
